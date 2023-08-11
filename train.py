@@ -41,7 +41,7 @@ def main(local_rank, args):
     # init DDP
     distributed = True
     ip = os.environ.get("MASTER_ADDR", "127.0.0.1")
-    port = os.environ.get("MASTER_PORT", "20507")
+    port = os.environ.get("MASTER_PORT", "20508")
     hosts = int(os.environ.get("WORLD_SIZE", 1))  # number of nodes
     rank = int(os.environ.get("RANK", 0))  # node id
     gpus = torch.cuda.device_count()  # gpus per node
@@ -175,7 +175,7 @@ def main(local_rank, args):
         time.sleep(10)
         data_time_s = time.time()
         time_s = time.time()
-        for i_iter, (imgs, img_metas, train_vox_label, train_grid, train_pt_labs) in enumerate(train_dataset_loader):
+        for i_iter, (imgs, img_metas, train_vox_label, train_grid, train_pt_labs, point_cloud) in enumerate(train_dataset_loader):
             
             imgs = imgs.cuda()
             train_grid = train_grid.to(torch.float32).cuda()
@@ -185,7 +185,12 @@ def main(local_rank, args):
                 train_pt_labs = train_pt_labs.cuda()
             # forward + backward + optimize
             data_time_e = time.time()
-            outputs_vox, outputs_pts = my_model(img=imgs, img_metas=img_metas, points=train_grid)
+            outputs_vox, outputs_pts = my_model(
+                img=imgs, 
+                img_metas=img_metas, 
+                points=train_grid,
+                point_cloud=point_cloud)
+            
             if cfg.lovasz_input == 'voxel':
                 lovasz_input = outputs_vox
                 lovasz_label = voxel_label

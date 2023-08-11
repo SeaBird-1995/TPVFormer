@@ -93,6 +93,8 @@ class DatasetWrapper_NuScenes(data.Dataset):
 
         data_tuple += (grid_ind, labels)
 
+        data_tuple += (xyz,)
+
         return data_tuple
 
 
@@ -120,8 +122,12 @@ def custom_collate_fn(data):
     # because we use a batch size of 1, so we can stack these tensor together.
     grid_ind_stack = np.stack([d[3] for d in data]).astype(np.float)
     point_label = np.stack([d[4] for d in data]).astype(np.int)
+
+    point_cloud = np.stack([d[5] for d in data]).astype(np.float32)
+
     return torch.from_numpy(img2stack), \
         meta2stack, \
         torch.from_numpy(label2stack), \
         torch.from_numpy(grid_ind_stack), \
-        torch.from_numpy(point_label)
+        torch.from_numpy(point_label), \
+        torch.from_numpy(point_cloud)
