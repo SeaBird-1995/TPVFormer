@@ -35,8 +35,14 @@ class ImagePoint_NuScenes(data.Dataset):
                 imread(filename, 'unchanged').astype(np.float32)
             )
 
-        lidar_sd_token = self.nusc.get('sample', info['token'])['data']['LIDAR_TOP']
-        lidarseg_labels_filename = os.path.join(self.data_path, self.nusc.get('lidarseg', lidar_sd_token)['filename'])
+        if self.nusc is None:
+            assert 'lidarseg' in info.keys()
+            lidarseg_labels_filename = info['lidarseg']
+        else:
+            lidar_sd_token = self.nusc.get('sample', info['token'])['data']['LIDAR_TOP']
+            lidarseg_labels_filename = os.path.join(
+                self.data_path, self.nusc.get('lidarseg', lidar_sd_token)['filename'])
+        
         points_label = np.fromfile(lidarseg_labels_filename, dtype=np.uint8).reshape([-1, 1])
         points_label = np.vectorize(self.learning_map.__getitem__)(points_label)
         
